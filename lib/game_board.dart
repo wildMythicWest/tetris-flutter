@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:tetris/game_controller.dart';
 import 'package:tetris/tetrimino.dart';
 
+import 'grid_point.dart';
+
 class GameBoard {
 
   Tetrimino activeTetrimino;
@@ -15,7 +17,7 @@ class GameBoard {
   int speed = 1;
   double totalStep = 0.0;
 
-  List<Tetrimino> staticBlocks = [];
+  List<GridPoint> staticBlocks = [];
 
 
   GameBoard(this.gameController) {
@@ -35,13 +37,13 @@ class GameBoard {
     double step = t * speed * tileSize;
     totalStep += step;
 
-    if(activeTetrimino.hasTouchedBottom()) {
+    if(activeTetrimino.hasCollided(staticBlocks)) {
       saveTetrimino(activeTetrimino);
       _createTetrimino();
     } else {
       if(totalStep >= tileSize) {
-        totalStep -= tileSize;
-        activeTetrimino.moveTetriminoDown(tileSize*speed);
+        totalStep = 0;
+        activeTetrimino.moveDown(staticBlocks);
       }
     }
   }
@@ -67,13 +69,15 @@ class GameBoard {
   }
 
   void drawStaticBlocks(Canvas canvas) {
-    staticBlocks.forEach((tetrimino) {
-      tetrimino.draw(canvas);
+    staticBlocks.forEach((block) {
+      block.draw(canvas, tileSize);
     });
   }
 
   void saveTetrimino(Tetrimino tetrimino) {
-    staticBlocks.add(tetrimino);
+    tetrimino.position.forEach((element) {
+      staticBlocks.add(element);
+    });
   }
 
   bool hasTouchedStaticBlock(Tetrimino tetrimino) {

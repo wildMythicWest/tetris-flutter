@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -7,7 +8,7 @@ class Tetrimino {
 
     final Shape shape;
 
-    List<Rect> position = [];
+    List<GridPoint> position;
 
     final double tileSize;
     final int tilesW;
@@ -17,118 +18,174 @@ class Tetrimino {
 
     Tetrimino(this.shape, this.tileSize, this.tilesW, this.tilesH) {
       boardBottom = tilesH*tileSize;
-      shape.points.forEach((element) {
-        position.add(_createRect(element.x, element.y));
-      });
+      position = shape.points;
     }
 
-    void slam() {
-      List<Rect> updatedPosition = [];
-      position.forEach((element) {
-        updatedPosition.add(_moveBlockDown(element, _calculateDistanceToBottom()));
-      });
-      position = updatedPosition;
+    void slam(List<GridPoint> staticBlocks) {
+      while(canMoveDown(staticBlocks)) {
+        moveDown(staticBlocks);
+      }
     }
 
-    double _calculateDistanceToBottom() {
-      return (tilesH * tileSize) - lowestPoint();
-    }
-
-    void moveLeft() {
-      List<Rect> updatedPosition = [];
-      position.forEach((element) {
-        updatedPosition.add(_moveBlockLeft(element, tileSize));
-      });
-      position = updatedPosition;
-    }
-
-    void moveRight() {
-      List<Rect> updatedPosition = [];
-      position.forEach((element) {
-        updatedPosition.add(_moveBlockRight(element, tileSize));
-      });
-      position = updatedPosition;
-    }
-
-    Rect _moveBlockLeft(Rect rect, double step) {
-      return Rect.fromLTWH(rect.left - step, rect.top, rect.width, rect.height);
-    }
-
-    Rect _moveBlockRight(Rect rect, double step) {
-      return Rect.fromLTWH(rect.left + step, rect.top, rect.width, rect.height);
-    }
-
-    void draw(Canvas canvas) {
-      position.forEach((element) {
-        canvas.drawRect(element, Paint()..color = shape.color);
-      });
-    }
-
-    Rect _createRect(int x, int y) {
-      return Rect.fromLTWH(tileSize*(x+4), tileSize*y, tileSize, tileSize);
-    }
-
-    void moveTetriminoDown(double step) {
-      List<Rect> updatedPosition = [];
-      position.forEach((element) {
-        updatedPosition.add(_moveBlockDown(element, step));
-      });
-      position = updatedPosition;
-    }
-
-    Rect _moveBlockDown(Rect rect, double step) {
-      return Rect.fromLTWH(rect.left, rect.top + step, rect.width, rect.height);
-    }
-
-    double lowestPoint() {
-      double lowestPoint = 0.0;
-      position.forEach((element) {
-        if(element.bottom > lowestPoint) {
-          lowestPoint = element.bottom;
+    bool canMoveDown(List<GridPoint> staticBlocks) {
+      for(GridPoint point in position) {
+        if(point.y >= tilesH -1) {
+          return false;
         }
-      });
-      return lowestPoint;
+        if(staticBlocks.indexWhere((staticBlock) => staticBlock.y == point.y+1 && staticBlock.x == point.x) != -1) {
+          return false;
+        }
+      }
+      return true;
     }
 
-    bool hasTouchedBottom() {
-      for(Rect element in position) {
-        if(element.bottom >= boardBottom) {
-          return true;
+    bool canMoveLeft(List<GridPoint> staticBlocks) {
+      for(GridPoint point in position) {
+        if(point.x <= 0) {
+          return false;
         }
+        if(staticBlocks.indexWhere((staticBlock) => staticBlock.x == point.x-1 && staticBlock.y == point.y) != -1) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    bool canMoveRight(List<GridPoint> staticBlocks) {
+      for(GridPoint point in position) {
+        if(point.x >= tilesW - 1) {
+          return false;
+        }
+        if(staticBlocks.indexWhere((staticBlock) => staticBlock.x == point.x+1 && staticBlock.y == point.y) != -1) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    bool moveLeft(List<GridPoint> staticBlocks) {
+      if(canMoveLeft(staticBlocks)) {
+        List<GridPoint> updatedPosition = [];
+        position.forEach((element) {
+          updatedPosition.add(_moveBlockLeft(element));
+        });
+        position = updatedPosition;
+        return true;
       }
       return false;
     }
 
+    bool moveRight(List<GridPoint> staticBlocks) {
+      if(canMoveRight(staticBlocks)) {
+        List<GridPoint> updatedPosition = [];
+        position.forEach((element) {
+          updatedPosition.add(_moveBlockRight(element));
+        });
+        position = updatedPosition;
+        return true;
+      }
+      return false;
+    }
+
+    bool moveDown(List<GridPoint> staticBlocks) {
+      if(canMoveDown(staticBlocks)) {
+        List<GridPoint> updatedPosition = [];
+        position.forEach((element) {
+          updatedPosition.add(_moveBlockDown(element));
+        });
+        position = updatedPosition;
+        return true;
+      }
+      return false;
+    }
+
+    GridPoint _moveBlockLeft(GridPoint point) {
+      GridPoint newPoint = new GridPoint.withColor(point.x - 1 , point.y, point.color);
+      return newPoint;
+    }
+
+    GridPoint _moveBlockRight(GridPoint point) {
+      GridPoint newPoint = new GridPoint.withColor(point.x + 1 , point.y, point.color);
+      return newPoint;
+    }
+
+    GridPoint _moveBlockDown(GridPoint point) {
+      GridPoint newPoint = new GridPoint.withColor(point.x , point.y + 1, point.color);
+      return newPoint;
+    }
+
+    void draw(Canvas canvas) {
+      position.forEach((element) {
+        element.draw(canvas, tileSize);
+      });
+    }
+
+    bool hasCollided(List<GridPoint> staticBlocks) {
+      return !canMoveDown(staticBlocks);
+    }
 }
 
 class Shape {
   final List<GridPoint> points;
   final String name;
   final Color color;
-  Shape(this.name, this.points, this.color);
+
+  Shape(this.name, this.points, this.color) {
+    points.forEach((point) {
+      point.apply(color);
+    });
+  }
 }
 
 class Shapes {
-  static Shape O = Shape("O", [GridPoint(1, 1), GridPoint(1, 2),
-    GridPoint(2,1), GridPoint(2, 2)], Colors.yellowAccent);
+  static Shape O = Shape("O", [
+    GridPoint(1, 1),
+    GridPoint(1, 2),
+    GridPoint(2,1),
+    GridPoint(2, 2)],
+      Colors.yellowAccent);
 
-  static Shape I = Shape("I", [GridPoint(1, 1), GridPoint(1, 2),
-    GridPoint(1,3), GridPoint(1, 4)], Colors.lightBlueAccent);
+  static Shape I = Shape("I", [
+    GridPoint(1, 1),
+    GridPoint(1, 2),
+    GridPoint(1,3),
+    GridPoint(1, 4)],
+      Colors.lightBlueAccent);
 
-  static Shape L = Shape("L", [GridPoint(1, 1), GridPoint(2, 1),
-    GridPoint(3,1), GridPoint(3, 2)], Colors.orangeAccent);
+  static Shape L = Shape("L", [
+    GridPoint(1, 1),
+    GridPoint(2, 1),
+    GridPoint(3,1),
+    GridPoint(3, 2)],
+      Colors.orangeAccent);
 
-  static Shape J = Shape("J", [GridPoint(2, 1), GridPoint(2, 2),
-    GridPoint(2,3), GridPoint(1, 3)], Colors.blueAccent);
+  static Shape J = Shape("J", [
+    GridPoint(2, 1),
+    GridPoint(2, 2),
+    GridPoint(2,3),
+    GridPoint(1, 3)],
+      Colors.blueAccent);
 
-  static Shape S = Shape("S", [GridPoint(1, 2), GridPoint(2, 2),
-    GridPoint(2,1), GridPoint(3, 1)], Colors.greenAccent);
+  static Shape S = Shape("S", [
+    GridPoint(1, 2),
+    GridPoint(2, 2),
+    GridPoint(2,1),
+    GridPoint(3, 1)],
+      Colors.greenAccent);
 
-  static Shape Z = Shape("Z", [GridPoint(1, 1), GridPoint(2, 1),
-    GridPoint(2,2), GridPoint(3, 2)], Colors.redAccent);
+  static Shape Z = Shape("Z", [
+    GridPoint(1, 1),
+    GridPoint(2, 1),
+    GridPoint(2,2),
+    GridPoint(3, 2)],
+      Colors.redAccent);
 
-  static Shape T = Shape("T", [GridPoint(1, 1), GridPoint(2, 1),
-    GridPoint(3,1), GridPoint(2, 2)], Colors.pinkAccent);
+  static Shape T = Shape("T", [
+    GridPoint(1, 1),
+    GridPoint(2, 1),
+    GridPoint(3,1),
+    GridPoint(2, 2)],
+      Colors.pinkAccent);
 
   static  List<Shape> allShapes = [O, I, L, J, S, Z, T];
 

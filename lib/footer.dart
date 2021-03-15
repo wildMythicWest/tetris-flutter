@@ -20,11 +20,11 @@ class Footer extends StatelessWidget {
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              new _ControlButton(gameController, "V", () { gameController.gameBoard.activeTetrimino.slam();}),
+              new _ControlButton(gameController, "V", () { gameController.gameBoard.activeTetrimino.slam(gameController.gameBoard.staticBlocks);}),
               new SizedBox(width: gameController.gameBoard.tileSize, height: gameController.gameBoard.tileSize,),
-              new _ControlButton(gameController, "<", () { gameController.gameBoard.activeTetrimino.moveLeft();}),
+              new _ControlButton(gameController, "<", () { gameController.gameBoard.activeTetrimino.moveLeft(gameController.gameBoard.staticBlocks);}),
               new SizedBox(width: gameController.gameBoard.tileSize, height: gameController.gameBoard.tileSize,),
-              new _ControlButton(gameController, ">", () { gameController.gameBoard.activeTetrimino.moveRight();}),
+              new _ControlButton(gameController, ">", () { gameController.gameBoard.activeTetrimino.moveRight(gameController.gameBoard.staticBlocks);}),
             ],
           ),
         )
