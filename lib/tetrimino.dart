@@ -139,52 +139,52 @@ class Shape {
 
 class Shapes {
   static Shape O = Shape("O", [
-    GridPoint(1, 1),
-    GridPoint(1, 2),
-    GridPoint(2,1),
-    GridPoint(2, 2)],
+    GridPoint(4, 0),
+    GridPoint(4, 1),
+    GridPoint(5, 0),
+    GridPoint(5, 1)],
       Colors.yellowAccent);
 
   static Shape I = Shape("I", [
-    GridPoint(1, 1),
-    GridPoint(1, 2),
-    GridPoint(1,3),
-    GridPoint(1, 4)],
+    GridPoint(4, 0),
+    GridPoint(4, 1),
+    GridPoint(4, 2),
+    GridPoint(4, 3)],
       Colors.lightBlueAccent);
 
   static Shape L = Shape("L", [
-    GridPoint(1, 1),
-    GridPoint(2, 1),
-    GridPoint(3,1),
-    GridPoint(3, 2)],
+    GridPoint(4, 0),
+    GridPoint(4, 1),
+    GridPoint(4, 2),
+    GridPoint(5, 2)],
       Colors.orangeAccent);
 
   static Shape J = Shape("J", [
-    GridPoint(2, 1),
-    GridPoint(2, 2),
-    GridPoint(2,3),
-    GridPoint(1, 3)],
+    GridPoint(4, 0),
+    GridPoint(4, 1),
+    GridPoint(4, 2),
+    GridPoint(3, 2)],
       Colors.blueAccent);
 
   static Shape S = Shape("S", [
-    GridPoint(1, 2),
-    GridPoint(2, 2),
-    GridPoint(2,1),
+    GridPoint(4, 0),
+    GridPoint(5, 0),
+    GridPoint(4, 1),
     GridPoint(3, 1)],
       Colors.greenAccent);
 
   static Shape Z = Shape("Z", [
-    GridPoint(1, 1),
-    GridPoint(2, 1),
-    GridPoint(2,2),
-    GridPoint(3, 2)],
+    GridPoint(4, 0),
+    GridPoint(5, 0),
+    GridPoint(5, 1),
+    GridPoint(6, 1)],
       Colors.redAccent);
 
   static Shape T = Shape("T", [
-    GridPoint(1, 1),
-    GridPoint(2, 1),
-    GridPoint(3,1),
-    GridPoint(2, 2)],
+    GridPoint(3, 0),
+    GridPoint(4, 0),
+    GridPoint(5, 0),
+    GridPoint(4, 1)],
       Colors.pinkAccent);
 
   static  List<Shape> allShapes = [O, I, L, J, S, Z, T];

@@ -64,6 +64,12 @@ class GameBoard {
   }
 
   void _createTetrimino() {
+    //todo check tetrimino can spawn
+    //todo if tetrimino can't spawn - game over
+    //todo basically check that there is nothing on the 0 line
+    if(staticBlocks.indexWhere((element) => element.y == 0) != -1) {
+      staticBlocks = [];
+    }
     Shapes.allShapes.shuffle(Random());
     activeTetrimino = Tetrimino(Shapes.allShapes.first, tileSize, tilesW, tilesH);
   }
