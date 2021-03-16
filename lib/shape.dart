@@ -8,7 +8,7 @@ import 'grid_point.dart';
 class Shape {
   Set<GridPoint> points;
   final String name;
-  final Color color;
+  Color color;
 
   Shape(this.name, this.points, this.color) {
     points.forEach((point) {
@@ -16,28 +16,33 @@ class Shape {
     });
   }
 
-  void rotateCounterclockwise() {
-    Set<GridPoint> updatedPosition = new HashSet();
-    points.forEach((element) {
-      updatedPosition.add(GridPoint.withColor(element.y, -element.x, color));
+  void applyColor(Color color) {
+    this.color = color;
+    points.forEach((point) {
+      point.apply(color);
     });
-    points = updatedPosition;
   }
 
-  void rotateClockwise() {
+  Shape rotateCounterclockwise() {
     Set<GridPoint> updatedPosition = new HashSet();
     points.forEach((element) {
-      updatedPosition.add(GridPoint.withColor(-element.y, element.x, color));
+      updatedPosition.add(GridPoint(element.y, -element.x));
     });
-    points = updatedPosition;
+    return new Shape(name, updatedPosition, color);
+  }
+
+  Shape rotateClockwise() {
+    Set<GridPoint> updatedPosition = new HashSet();
+    points.forEach((element) {
+      updatedPosition.add(GridPoint(-element.y, element.x));
+    });
+    return new Shape(name, updatedPosition, color);
   }
 
   @override
   String toString() {
     return 'Shape{$points}';
   }
-
-
 }
 
 class Shapes {

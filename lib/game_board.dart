@@ -69,7 +69,7 @@ class GameBoard {
       staticBlocks = new HashSet();
     }
     Shapes.allShapes.shuffle(Random());
-    activeTetrimino = Tetrimino(Shapes.allShapes.first, tileSize, tilesW, tilesH);
+    activeTetrimino = Tetrimino(Shapes.allShapes.first, tileSize, tilesW, tilesH, staticBlocks);
   }
 
   void drawStaticBlocks(Canvas canvas) {
@@ -79,14 +79,14 @@ class GameBoard {
   }
 
   void saveTetrimino(Tetrimino tetrimino) {
-    tetrimino.positionOnBoard(activeTetrimino.origin).forEach((element) {
+    tetrimino.positionOnBoard().forEach((element) {
       staticBlocks.add(element);
     });
   }
 
   void clearTetris(Tetrimino collidedTetrimino) {
     Set<int> rows = new HashSet();
-    collidedTetrimino.positionOnBoard(activeTetrimino.origin).forEach((element) {
+    collidedTetrimino.positionOnBoard().forEach((element) {
       rows.add(element.y);
     });
 

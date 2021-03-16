@@ -13,9 +13,13 @@ class GridPoint {
     this.color = color;
   }
 
-  void draw(Canvas canvas, double tileSize) {
+  void drawWithColor(Canvas canvas, double tileSize, Color color) {
     Rect rect = Rect.fromLTWH(tileSize*x, tileSize*y, tileSize, tileSize);
     canvas.drawRect(rect, Paint()..color = color);
+  }
+
+  void draw(Canvas canvas, double tileSize) {
+    drawWithColor(canvas, tileSize, color);
   }
 
   @override

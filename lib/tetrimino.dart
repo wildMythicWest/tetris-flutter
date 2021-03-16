@@ -7,27 +7,32 @@ import 'package:tetris/shape.dart';
 
 class Tetrimino {
 
-    final Shape shape;
-
+    Shape shape;
     GridPoint origin;
 
+    final Set<GridPoint> staticBlocks;
     final double tileSize;
     final int tilesW;
     final int tilesH;
 
-    double boardBottom;
-
-    Tetrimino(this.shape, this.tileSize, this.tilesW, this.tilesH) {
-      boardBottom = tilesH*tileSize;
-      origin = GridPoint(4, 0);
+    Tetrimino(this.shape, this.tileSize, this.tilesW, this.tilesH, this.staticBlocks) {
+      origin = GridPoint(5, 0);
     }
 
-    Set<GridPoint> positionOnBoard(GridPoint fromOrigin) {
+    Tetrimino.fromOrigin(GridPoint origin, this.shape, this.tileSize, this.tilesW, this.tilesH, this.staticBlocks) {
+      this.origin = origin;
+    }
+
+    Set<GridPoint> position(GridPoint origin, Shape shape) {
       Set<GridPoint> currentPosition = new HashSet();
       shape.points.forEach((element) {
-        currentPosition.add(GridPoint.withColor(element.x + fromOrigin.x, element.y + fromOrigin.y, element.color));
+        currentPosition.add(GridPoint.withColor(element.x + origin.x, element.y + origin.y, element.color));
       });
       return currentPosition;
+    }
+
+    Set<GridPoint> positionOnBoard() {
+      return position(origin, shape);
     }
 
     void hardDrop(Set<GridPoint> staticBlocks) {
@@ -61,15 +66,15 @@ class Tetrimino {
       return false;
     }
 
-    bool canMove(GridPoint newOrigin, Set<GridPoint> staticBlocks) {
-      Set<GridPoint> newPosition = positionOnBoard(newOrigin);
-      Set intersection = staticBlocks.intersection(newPosition);
-      return intersection.isEmpty && !hasCollidedWithBoard(newPosition);
+    bool canMove(GridPoint origin, Set<GridPoint> staticBlocks, Shape shape) {
+      Set<GridPoint> blockPosition = position(origin, shape);
+      Set intersection = staticBlocks.intersection(blockPosition);
+      return intersection.isEmpty && !hasCollidedWithBoard(blockPosition);
     }
 
     bool moveLeft(Set<GridPoint> staticBlocks) {
       GridPoint newOrigin = _moveBlockLeft();
-      if(canMove(newOrigin, staticBlocks)) {
+      if(canMove(newOrigin, staticBlocks, shape)) {
         origin = newOrigin;
         return true;
       }
@@ -78,7 +83,7 @@ class Tetrimino {
 
     bool moveRight(Set<GridPoint> staticBlocks) {
       GridPoint newOrigin = _moveBlockRight();
-      if(canMove(newOrigin, staticBlocks)) {
+      if(canMove(newOrigin, staticBlocks, shape)) {
         origin = newOrigin;
         return true;
       }
@@ -87,7 +92,7 @@ class Tetrimino {
 
     bool moveDown(Set<GridPoint> staticBlocks) {
       GridPoint newOrigin = _moveBlockDown();
-      if(canMove(newOrigin, staticBlocks)) {
+      if(canMove(newOrigin, staticBlocks, shape)) {
         origin = newOrigin;
         return true;
       }
@@ -107,8 +112,39 @@ class Tetrimino {
     }
 
     void draw(Canvas canvas) {
-      positionOnBoard(origin).forEach((element) {
+      positionOnBoard().forEach((element) {
         element.draw(canvas, tileSize);
       });
+      drawGhost(canvas);
     }
+
+    void drawGhost(canvas) {
+      projection().forEach((element) {
+        element.drawWithColor(canvas, tileSize, Colors.white30);
+      });
+    }
+
+    Set<GridPoint> projection() {
+      Tetrimino ghost = Tetrimino.fromOrigin(origin, shape, tileSize, tilesW, tilesH, staticBlocks);
+      ghost.hardDrop(staticBlocks);
+      return ghost.positionOnBoard();
+    }
+
+    bool canRotate(Set<GridPoint> staticBlocks, Shape shape) {
+      return canMove(origin, staticBlocks, shape);
+    }
+
+  void rotateCounterclockwise(Set<GridPoint> staticBlocks) {
+    Shape newShape = shape.rotateCounterclockwise();
+    if(canRotate(staticBlocks, newShape)) {
+      shape = newShape;
+    }
+  }
+
+  void rotateClockwise(Set<GridPoint> staticBlocks) {
+    Shape newShape = shape.rotateClockwise();
+    if(canRotate(staticBlocks, newShape)) {
+      shape = newShape;
+    }
+  }
 }
