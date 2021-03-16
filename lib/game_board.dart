@@ -1,8 +1,10 @@
+import 'dart:collection';
 import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:tetris/game_controller.dart';
+import 'package:tetris/shape.dart';
 import 'package:tetris/tetrimino.dart';
 
 import 'grid_point.dart';
@@ -17,7 +19,7 @@ class GameBoard {
   int speed = 1;
   double totalStep = 0.0;
 
-  List<GridPoint> staticBlocks = [];
+  Set<GridPoint> staticBlocks = new HashSet();
 
 
   GameBoard(this.gameController) {
@@ -37,13 +39,12 @@ class GameBoard {
     double step = t * speed * tileSize;
     totalStep += step;
 
-    if(activeTetrimino.hasCollided(staticBlocks)) {
-      saveTetrimino(activeTetrimino);
-      _createTetrimino();
-    } else {
-      if(totalStep >= tileSize) {
-        totalStep = 0;
-        activeTetrimino.moveDown(staticBlocks);
+    if(totalStep >= tileSize) {
+      totalStep = 0;
+      if(!activeTetrimino.moveDown(staticBlocks)) {
+        saveTetrimino(activeTetrimino);
+        clearTetris(activeTetrimino);
+        _createTetrimino();
       }
     }
   }
@@ -64,11 +65,8 @@ class GameBoard {
   }
 
   void _createTetrimino() {
-    //todo check tetrimino can spawn
-    //todo if tetrimino can't spawn - game over
-    //todo basically check that there is nothing on the 0 line
-    if(staticBlocks.indexWhere((element) => element.y == 0) != -1) {
-      staticBlocks = [];
+    if(staticBlocks.where((element) => element.y == 0).isNotEmpty) {
+      staticBlocks = new HashSet();
     }
     Shapes.allShapes.shuffle(Random());
     activeTetrimino = Tetrimino(Shapes.allShapes.first, tileSize, tilesW, tilesH);
@@ -81,17 +79,33 @@ class GameBoard {
   }
 
   void saveTetrimino(Tetrimino tetrimino) {
-    tetrimino.position.forEach((element) {
+    tetrimino.positionOnBoard(activeTetrimino.origin).forEach((element) {
       staticBlocks.add(element);
     });
   }
 
-  bool hasTouchedStaticBlock(Tetrimino tetrimino) {
-//    for(Tetrimino element in staticBlocks) {
-//      if(element.top < tetrimino.lowestPoint()) {
-//        return true;
-//      }
-//    }
-    return false;
+  void clearTetris(Tetrimino collidedTetrimino) {
+    Set<int> rows = new HashSet();
+    collidedTetrimino.positionOnBoard(activeTetrimino.origin).forEach((element) {
+      rows.add(element.y);
+    });
+
+    Set<GridPoint> newStaticBlocks = staticBlocks;
+
+    List<int> sortedRows = rows.toList();
+    sortedRows.sort();
+
+    for (var row in sortedRows) {
+      Set<GridPoint> line = Set.from(staticBlocks.where((element) => row == element.y));
+      if(line.length == 10) {
+        newStaticBlocks = newStaticBlocks.difference(line);
+        newStaticBlocks.forEach((element) {
+          if(element.y < row) {
+            element.y += 1;
+          }
+        });
+      }
+    }
+    staticBlocks = newStaticBlocks;
   }
 }

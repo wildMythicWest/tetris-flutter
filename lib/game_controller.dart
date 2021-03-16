@@ -19,8 +19,6 @@ class GameController extends Game {
   }
 
   void render(Canvas canvas) {
-
-
 //    canvas.drawRect(Rect.fromPoints(Offset(0.0, 0.0), Offset(10.0, 10.0)), Paint()..color = Colors.black);
 
     gameBoard.render(canvas);

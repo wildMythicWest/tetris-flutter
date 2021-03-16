@@ -18,4 +18,23 @@ class GridPoint {
     canvas.drawRect(rect, Paint()..color = color);
   }
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is GridPoint &&
+              runtimeType == other.runtimeType &&
+              x == other.x &&
+              y == other.y;
+
+  @override
+  int get hashCode =>
+      x.hashCode ^
+      y.hashCode;
+
+  @override
+  String toString() {
+    return '{$x, $y}';
+  }
+
+
 }
