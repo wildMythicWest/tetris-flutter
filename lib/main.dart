@@ -1,41 +1,47 @@
-import 'package:flame/flame.dart';
 import 'package:flame/util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:tetris/tetris_game.dart';
+import 'package:tetris/tetris_game_ui.dart';
 
 import 'bgm.dart';
-import 'footer.dart';
-import 'game_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Util flameUtil = Util();
   await flameUtil.fullScreen();
   await flameUtil.setOrientation(DeviceOrientation.portraitUp);
-  Size screenSize = await flameUtil.initialDimensions();
+  Size screenSize = await flameUtil.initialDimensions(); //20x20
+
+  double gameScreenWidth = screenSize.width * 4 / 5;
+  double gameScreenHeight = screenSize.height * 4 / 5;
+  Size gameScreenSize = Size(gameScreenWidth, gameScreenHeight);
+
+  double gameBottom = screenSize.height - gameScreenWidth;
+  double gameRight = screenSize.width - gameScreenWidth;
 
   await BGM.add("Tetris_theme.ogg");
 
-  Size gameBoardSize = determineBoardArea(screenSize);
-  Size footerSize = determineFooterArea(screenSize);
+  TetrisGameUi gameUI = TetrisGameUi();
+  TetrisGame game = TetrisGame(gameUI.state, gameScreenSize);
+  gameUI.state.game = game;
 
-  GameController gameController = new GameController(gameBoardSize);
-  Footer footer = new Footer(gameController);
   runApp(MaterialApp(
     title: 'Tetris Game',
     theme: ThemeData.dark(),
     home: Scaffold(
+      backgroundColor: Colors.black,
       body: Stack(
         fit: StackFit.expand,
-        children: [
-          Positioned.fromRect(
-            rect: Rect.fromLTWH(0, 0, gameBoardSize.width, gameBoardSize.height),
-            child: gameController.widget,
+        children: <Widget>[
+          Positioned.fill(
+            child: game.widget,
+            bottom: gameBottom,
+            right: gameRight,
           ),
-          Positioned.fromRect(
-              rect: Rect.fromLTWH(0, gameBoardSize.height, footerSize.width, footerSize.height),
-              child: footer,
+          Positioned.fill(
+            child: gameUI,
           ),
         ],
       ),
@@ -43,14 +49,5 @@ void main() async {
     debugShowCheckedModeBanner: false,
   ),
   );
-  BGM.attachWidgetBindingListener();
-  BGM.play(0, 0.4);
-}
-
-Size determineBoardArea(Size screenSize) {
-  return new Size(screenSize.width, screenSize.height * 4 / 5);
-}
-
-Size determineFooterArea(Size screenSize) {
-  return new Size(screenSize.width, screenSize.height / 5);
+  BGM.play(0, 0.3);
 }

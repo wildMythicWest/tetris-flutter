@@ -35,9 +35,9 @@ class Tetrimino {
       return position(origin, shape);
     }
 
-    void hardDrop(Set<GridPoint> staticBlocks) {
+    void hardDrop() {
       while(true) {
-        if(!moveDown(staticBlocks)) {
+        if(!moveDown()) {
           break;
         }
       }
@@ -66,33 +66,33 @@ class Tetrimino {
       return false;
     }
 
-    bool canMove(GridPoint origin, Set<GridPoint> staticBlocks, Shape shape) {
+    bool canMove(GridPoint origin, Shape shape) {
       Set<GridPoint> blockPosition = position(origin, shape);
       Set intersection = staticBlocks.intersection(blockPosition);
       return intersection.isEmpty && !hasCollidedWithBoard(blockPosition);
     }
 
-    bool moveLeft(Set<GridPoint> staticBlocks) {
+    bool moveLeft() {
       GridPoint newOrigin = _moveBlockLeft();
-      if(canMove(newOrigin, staticBlocks, shape)) {
+      if(canMove(newOrigin, shape)) {
         origin = newOrigin;
         return true;
       }
       return false;
     }
 
-    bool moveRight(Set<GridPoint> staticBlocks) {
+    bool moveRight() {
       GridPoint newOrigin = _moveBlockRight();
-      if(canMove(newOrigin, staticBlocks, shape)) {
+      if(canMove(newOrigin, shape)) {
         origin = newOrigin;
         return true;
       }
       return false;
     }
 
-    bool moveDown(Set<GridPoint> staticBlocks) {
+    bool moveDown() {
       GridPoint newOrigin = _moveBlockDown();
-      if(canMove(newOrigin, staticBlocks, shape)) {
+      if(canMove(newOrigin, shape)) {
         origin = newOrigin;
         return true;
       }
@@ -126,22 +126,22 @@ class Tetrimino {
 
     Set<GridPoint> projection() {
       Tetrimino ghost = Tetrimino.fromOrigin(origin, shape, tileSize, tilesW, tilesH, staticBlocks);
-      ghost.hardDrop(staticBlocks);
+      ghost.hardDrop();
       return ghost.positionOnBoard();
     }
 
     bool canRotate(Set<GridPoint> staticBlocks, Shape shape) {
-      return canMove(origin, staticBlocks, shape);
+      return canMove(origin, shape);
     }
 
-  void rotateCounterclockwise(Set<GridPoint> staticBlocks) {
+  void rotateCounterclockwise() {
     Shape newShape = shape.rotateCounterclockwise();
     if(canRotate(staticBlocks, newShape)) {
       shape = newShape;
     }
   }
 
-  void rotateClockwise(Set<GridPoint> staticBlocks) {
+  void rotateClockwise() {
     Shape newShape = shape.rotateClockwise();
     if(canRotate(staticBlocks, newShape)) {
       shape = newShape;

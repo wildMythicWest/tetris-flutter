@@ -71,10 +71,10 @@ class Shapes {
 
   static Shape J = Shape("J",
       Set<GridPoint>.of([
-        GridPoint(-1, -2),
-        GridPoint(-1, -1),
-        GridPoint(-1, 0),
-        GridPoint(-2, 0)]),
+        GridPoint(0, -2),
+        GridPoint(0, -1),
+        GridPoint(0, 0),
+        GridPoint(-1, 0)]),
       Colors.blueAccent);
 
   static Shape S = Shape("S",
@@ -87,10 +87,10 @@ class Shapes {
 
   static Shape Z = Shape("Z",
       Set<GridPoint>.of([
-        GridPoint(-2, -1),
         GridPoint(-1, -1),
-        GridPoint(-1, 0),
-        GridPoint(0, 0)]),
+        GridPoint(0, -1),
+        GridPoint(0, 0),
+        GridPoint(1, 0)]),
       Colors.redAccent);
 
   static Shape T = Shape("T", Set<GridPoint>.of([

@@ -3,21 +3,24 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:tetris/game_controller.dart';
 import 'package:tetris/shape.dart';
 import 'package:tetris/tetrimino.dart';
+import 'package:tetris/tetris_game.dart';
+import 'package:tetris/tetris_game_ui.dart';
 
 import 'grid_point.dart';
 
 class GameBoard {
 
   Tetrimino activeTetrimino;
-  final GameController gameController;
+  final TetrisGame gameController;
   double tileSize;
   final int tilesW = 10;
   int tilesH;
   int speed = 1;
   double totalStep = 0.0;
+
+  int comboCounter = 1;
 
   Set<GridPoint> staticBlocks = new HashSet();
 
@@ -25,7 +28,6 @@ class GameBoard {
   GameBoard(this.gameController) {
     tileSize = gameController.screenSize.width / tilesW;
     tilesH = (gameController.screenSize.height / tileSize).floor();
-    _createTetrimino();
   }
 
   void render(Canvas canvas) {
@@ -41,12 +43,20 @@ class GameBoard {
 
     if(totalStep >= tileSize) {
       totalStep = 0;
-      if(!activeTetrimino.moveDown(staticBlocks)) {
+      if(!activeTetrimino.moveDown()) {
         saveTetrimino(activeTetrimino);
-        clearTetris(activeTetrimino);
+        clearLines(activeTetrimino);
         _createTetrimino();
       }
     }
+  }
+
+  void startNewGame() {
+    staticBlocks = new HashSet();
+    comboCounter = 1;
+    gameController.state.score = 0;
+    initNextShapes();
+    _createTetrimino();
   }
 
   void drawGameBoardGrid(Canvas canvas) {
@@ -64,12 +74,38 @@ class GameBoard {
     canvas.drawRect(background, backgroundPaint);
   }
 
+  Queue<Shape> nextShapes = new Queue();
+
+  void initNextShapes() {
+    nextShapes = new Queue();
+    for(int i = 0; i < 3; i++) {
+      Shapes.allShapes.shuffle(Random());
+      nextShapes.add(Shapes.allShapes.first);
+    }
+  }
+
+  Shape getNextShape() {
+    Shapes.allShapes.shuffle(Random());
+    nextShapes.add(Shapes.allShapes.first);
+    Shape next = nextShapes.removeFirst();
+    redrawNextShapes();
+    return next;
+  }
+
+  void redrawNextShapes() {
+    List<Shape> shapes = nextShapes.toList();
+    gameController.state.nextShape1 = shapes.elementAt(0);
+    gameController.state.nextShape2 = shapes.elementAt(1);
+    gameController.state.nextShape3 = shapes.elementAt(2);
+    gameController.state.update();
+  }
+
   void _createTetrimino() {
     if(staticBlocks.where((element) => element.y == 0).isNotEmpty) {
-      staticBlocks = new HashSet();
+      gameController.state.currentScreen = UIScreen.lost;
     }
-    Shapes.allShapes.shuffle(Random());
-    activeTetrimino = Tetrimino(Shapes.allShapes.first, tileSize, tilesW, tilesH, staticBlocks);
+    Shape shape = getNextShape();
+    activeTetrimino = Tetrimino(shape, tileSize, tilesW, tilesH, staticBlocks);
   }
 
   void drawStaticBlocks(Canvas canvas) {
@@ -84,7 +120,7 @@ class GameBoard {
     });
   }
 
-  void clearTetris(Tetrimino collidedTetrimino) {
+  void clearLines(Tetrimino collidedTetrimino) {
     Set<int> rows = new HashSet();
     collidedTetrimino.positionOnBoard().forEach((element) {
       rows.add(element.y);
@@ -94,7 +130,7 @@ class GameBoard {
 
     List<int> sortedRows = rows.toList();
     sortedRows.sort();
-
+    int linesCleared = 0;
     for (var row in sortedRows) {
       Set<GridPoint> line = Set.from(staticBlocks.where((element) => row == element.y));
       if(line.length == 10) {
@@ -104,8 +140,35 @@ class GameBoard {
             element.y += 1;
           }
         });
+        linesCleared++;
       }
     }
     staticBlocks = newStaticBlocks;
+
+    changeScore(linesCleared);
+  }
+
+  void changeScore(int linesCleared) {
+    switch(linesCleared) {
+      case 1:
+        gameController.state.score += 100*comboCounter;
+        comboCounter++;
+        break;
+      case 2:
+        gameController.state.score += 200*comboCounter;
+        comboCounter++;
+        break;
+      case 3:
+        gameController.state.score += 400*comboCounter;
+        comboCounter++;
+        break;
+      case 4:
+        gameController.state.score += 800*comboCounter;
+        comboCounter++;
+        break;
+      default:
+        comboCounter = 1;
+    }
+    gameController.state.update();
   }
 }
