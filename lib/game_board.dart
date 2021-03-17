@@ -17,9 +17,10 @@ class GameBoard {
   double tileSize;
   final int tilesW = 10;
   int tilesH;
-  int speed = 1;
+  double speed = 1;
   double totalStep = 0.0;
 
+  int totalLinesCleared = 0;
   int comboCounter = 1;
 
   Set<GridPoint> staticBlocks = new HashSet();
@@ -38,6 +39,7 @@ class GameBoard {
   }
 
   void update(double t) {
+    autoMove(t);
     double step = t * speed * tileSize;
     totalStep += step;
 
@@ -57,6 +59,13 @@ class GameBoard {
     gameController.state.score = 0;
     initNextShapes();
     _createTetrimino();
+    gameController.state.heldShape = null;
+    totalLinesCleared = 0;
+    speed = 1;
+    autoMoveEnabled = false;
+    autoMoveDirection = AutoMoveDirection.NONE;
+    level = 1;
+    linesToNextLevel = 5;
   }
 
   void drawGameBoardGrid(Canvas canvas) {
@@ -101,11 +110,15 @@ class GameBoard {
   }
 
   void _createTetrimino() {
+    _createTetriminoFromOrigin(GridPoint(5, 0));
+  }
+
+  void _createTetriminoFromOrigin(GridPoint origin) {
     if(staticBlocks.where((element) => element.y == 0).isNotEmpty) {
       gameController.state.currentScreen = UIScreen.lost;
     }
     Shape shape = getNextShape();
-    activeTetrimino = Tetrimino(shape, tileSize, tilesW, tilesH, staticBlocks);
+    activeTetrimino = Tetrimino.fromOrigin(origin, shape, tileSize, tilesW, tilesH, staticBlocks);
   }
 
   void drawStaticBlocks(Canvas canvas) {
@@ -146,6 +159,25 @@ class GameBoard {
     staticBlocks = newStaticBlocks;
 
     changeScore(linesCleared);
+    this.totalLinesCleared += linesCleared;
+    linesToNextLevel -= linesCleared;
+    changeLevel();
+  }
+
+  int level = 1;
+  int linesToNextLevel = 5;
+
+  changeLevel() {
+    if(linesToNextLevel <= 0) {
+      level++;
+      linesToNextLevel += level*5;
+      changeSpeed();
+      gameController.state.update();
+    }
+  }
+
+  changeSpeed() {
+    speed += 1;
   }
 
   void changeScore(int linesCleared) {
@@ -163,7 +195,7 @@ class GameBoard {
         comboCounter++;
         break;
       case 4:
-        gameController.state.score += 800*comboCounter;
+        gameController.state.score += 1200*comboCounter;
         comboCounter++;
         break;
       default:
@@ -171,4 +203,84 @@ class GameBoard {
     }
     gameController.state.update();
   }
+
+  void holdTetrimino() {
+    GridPoint origin = activeTetrimino.origin;
+    if(gameController.state.heldShape != null) {
+      Shape currentlyHeld = Shape(
+          gameController.state.heldShape.name,
+          gameController.state.heldShape.points,
+          gameController.state.heldShape.color);
+      gameController.state.heldShape = Shape(
+          activeTetrimino.shape.name,
+          activeTetrimino.shape.points,
+          activeTetrimino.shape.color);
+      activeTetrimino = Tetrimino.fromOrigin(origin, currentlyHeld, tileSize, tilesW, tilesH, staticBlocks);
+    } else {
+      gameController.state.heldShape = Shape(
+          activeTetrimino.shape.name,
+          activeTetrimino.shape.points,
+          activeTetrimino.shape.color);
+      _createTetriminoFromOrigin(origin);
+    }
+    gameController.state.update();
+  }
+
+  double originalSpeed;
+
+  void beginSoftDrop() {
+    originalSpeed = speed;
+    speed = originalSpeed + 10;
+  }
+
+  void endSoftDrop() {
+    speed = originalSpeed;
+  }
+
+  bool autoMoveEnabled = false;
+  AutoMoveDirection autoMoveDirection = AutoMoveDirection.NONE;
+  double autoMoveStep = 0;
+
+  autoMove(double t) async {
+    if(!autoMoveEnabled || autoMoveDirection == AutoMoveDirection.NONE) {
+      return;
+    }
+    double step = t * (speed + 10) * tileSize;
+    autoMoveStep += step;
+
+    if(autoMoveStep >= tileSize) {
+      autoMoveStep = 0;
+      if(AutoMoveDirection.LEFT == autoMoveDirection) {
+        activeTetrimino.moveLeft();
+      } else if(AutoMoveDirection.RIGHT == autoMoveDirection) {
+        activeTetrimino.moveRight();
+      }
+    }
+  }
+
+  stopAutoMove() {
+    autoMoveEnabled = false;
+    autoMoveDirection = AutoMoveDirection.NONE;
+  }
+
+  startAutoMoveRight() {
+    autoMoveEnabled = true;
+    autoMoveDirection = AutoMoveDirection.RIGHT;
+  }
+
+  startAutoMoveLeft() {
+    autoMoveEnabled = true;
+    autoMoveDirection = AutoMoveDirection.LEFT;
+  }
+
+  hardDrop() {
+    activeTetrimino.hardDrop();
+    saveTetrimino(activeTetrimino);
+    clearLines(activeTetrimino);
+    _createTetrimino();
+  }
+}
+
+enum AutoMoveDirection {
+  LEFT, RIGHT, NONE
 }

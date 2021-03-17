@@ -43,10 +43,6 @@ class Tetrimino {
       }
     }
 
-    void softDrop() {
-
-    }
-
     //Move block first, after moved, check if it will collide, if does not collide we make it the new position
 
     bool hasCollidedWithBoard(Set<GridPoint> newPosition) {
@@ -99,16 +95,16 @@ class Tetrimino {
       return false;
     }
 
-    GridPoint _moveBlockLeft() {
-      return new GridPoint(origin.x - 1 , origin.y);
+    GridPoint _moveBlockLeft([GridPoint o]) {
+      return o == null ? new GridPoint(origin.x - 1 , origin.y) : new GridPoint(o.x - 1 , o.y);
     }
 
-    GridPoint _moveBlockRight() {
-      return new GridPoint(origin.x + 1 , origin.y);
+    GridPoint _moveBlockRight([GridPoint o]) {
+      return o == null ? new GridPoint(origin.x + 1 , origin.y) : new GridPoint(o.x + 1 , o.y);
     }
 
-    GridPoint _moveBlockDown() {
-      return new GridPoint(origin.x , origin.y + 1);
+    GridPoint _moveBlockDown([GridPoint o]) {
+      return o == null ? new GridPoint(origin.x , origin.y + 1) : new GridPoint(o.x , o.y + 1);
     }
 
     void draw(Canvas canvas) {
@@ -130,21 +126,59 @@ class Tetrimino {
       return ghost.positionOnBoard();
     }
 
-    bool canRotate(Set<GridPoint> staticBlocks, Shape shape) {
+    bool canRotate(Shape shape) {
       return canMove(origin, shape);
     }
 
   void rotateCounterclockwise() {
     Shape newShape = shape.rotateCounterclockwise();
-    if(canRotate(staticBlocks, newShape)) {
+    if(canRotate(newShape)) {
       shape = newShape;
     }
   }
 
   void rotateClockwise() {
     Shape newShape = shape.rotateClockwise();
-    if(canRotate(staticBlocks, newShape)) {
+    if(canRotate(newShape)) {
       shape = newShape;
+      return;
+    }
+
+    if(tryMoveLeft(origin, newShape)) {
+      return;
+    }
+    if(tryMoveRight(origin, newShape)) {
+      return;
+    }
+  }
+
+  bool tryMoveLeft(GridPoint origin, Shape shape) {
+    GridPoint newOrigin = _moveBlockLeft(origin);
+    if (canMove(newOrigin, this.shape)) {
+      if(canMove(newOrigin, shape)) {
+        this.origin = newOrigin;
+        this.shape = shape;
+        return true;
+      } else {
+        return tryMoveLeft(newOrigin, shape);
+      }
+    } else {
+      return false;
+    }
+  }
+
+  bool tryMoveRight(GridPoint origin, Shape shape) {
+    GridPoint newOrigin = _moveBlockRight(origin);
+    if (canMove(newOrigin, this.shape)) {
+      if (canMove(newOrigin, shape)) {
+        this.origin = newOrigin;
+        this.shape = shape;
+        return true;
+      } else {
+        return tryMoveRight(newOrigin, shape);
+      }
+    } else {
+      return false;
     }
   }
 }

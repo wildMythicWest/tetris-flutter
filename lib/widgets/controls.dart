@@ -45,7 +45,19 @@ class RotateRight extends StatelessWidget {
   }
 }
 
-class HardDrop extends StatelessWidget {
+class Hold extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Icon(
+      Icons.swap_vert,
+      color: Colors.green,
+      size: 60.0,
+    );
+  }
+
+}
+
+class Drop extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Icon(

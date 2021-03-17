@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tetris/shape.dart';
 import 'package:tetris/status_area.dart';
+import 'package:tetris/tetrimino.dart';
 import 'package:tetris/tetris_game.dart';
 import 'package:tetris/widgets/controls.dart';
 
@@ -29,6 +30,8 @@ class TetrisGameUiState extends State<TetrisGameUi> with WidgetsBindingObserver 
   Shape nextShape1;
   Shape nextShape2;
   Shape nextShape3;
+
+  Shape heldShape;
 
   void initState() {
     super.initState();
@@ -114,6 +117,15 @@ class TetrisGameUiState extends State<TetrisGameUi> with WidgetsBindingObserver 
   Widget scoreDisplay() {
     return Row(
       children: <Widget>[
+        Text(
+          "Level: " + game.gameBoard.level.toString(),
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w400,
+            color: Colors.white,
+          ),
+        ),
+        SizedBox(width: 20,),
         Padding(
           padding: EdgeInsets.only(right: 6),
           child: Icon(
@@ -197,6 +209,19 @@ class TetrisGameUiState extends State<TetrisGameUi> with WidgetsBindingObserver 
                       CustomPaint(
                         painter: NextShapePainter(nextShape3),
                       ),
+                      SizedBox(width: 70, height: 70,),
+                      Text(
+                        "Hold:",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(width: 70, height: 40,),
+                      CustomPaint(
+                        painter: NextShapePainter(heldShape),
+                      ),
                     ],
                   ),
                 ],
@@ -208,33 +233,40 @@ class TetrisGameUiState extends State<TetrisGameUi> with WidgetsBindingObserver 
               children: <Widget>[
                 spacer(),
                 GestureDetector(
-                  onTapDown: (TapDownDetails d) => game.gameBoard.activeTetrimino.hardDrop(),
+                  onTapDown: (_) => game.gameBoard.activeTetrimino.moveDown(),
+                  onVerticalDragStart: (_) => game.gameBoard.hardDrop(),
+                  onLongPressStart: (_) => game.gameBoard.beginSoftDrop(),
+                  onLongPressEnd: (_) => game.gameBoard.endSoftDrop(),
                   behavior: HitTestBehavior.opaque,
-                  child: HardDrop(),
+                  child: Drop(),
                 ),
                 spacer(),
                 GestureDetector(
                   onTapDown: (TapDownDetails d) => game.gameBoard.activeTetrimino.moveLeft(),
+                  onLongPressStart: (_) => game.gameBoard.startAutoMoveLeft(),
+                  onLongPressEnd: (_) => game.gameBoard.stopAutoMove(),
                   behavior: HitTestBehavior.opaque,
                   child: MoveLeft(),
                 ),
                 spacer(),
                 GestureDetector(
                   onTapDown: (TapDownDetails d) => game.gameBoard.activeTetrimino.moveRight(),
+                  onLongPressStart: (_) => game.gameBoard.startAutoMoveRight(),
+                  onLongPressEnd: (_) => game.gameBoard.stopAutoMove(),
                   behavior: HitTestBehavior.opaque,
                   child: MoveRight(),
-                ),
-                spacer(),
-                GestureDetector(
-                  onTapDown: (TapDownDetails d) => game.gameBoard.activeTetrimino.rotateCounterclockwise(),
-                  behavior: HitTestBehavior.opaque,
-                  child: RotateLeft(),
                 ),
                 spacer(),
                 GestureDetector(
                   onTapDown: (TapDownDetails d) => game.gameBoard.activeTetrimino.rotateClockwise(),
                   behavior: HitTestBehavior.opaque,
                   child: RotateRight(),
+                ),
+                spacer(),
+                GestureDetector(
+                  onTapDown: (TapDownDetails d) => game.gameBoard.holdTetrimino(),
+                  behavior: HitTestBehavior.opaque,
+                  child: Hold(),
                 ),
               ],
             ),
@@ -252,11 +284,44 @@ class TetrisGameUiState extends State<TetrisGameUi> with WidgetsBindingObserver 
         child: Text(
           'Game Over!',
           style: TextStyle(
-            fontSize: 25,
+            fontSize: 30,
             color: Colors.red,
           ),
         ),
       ),
+    );
+    children.add(Padding(
+      padding: EdgeInsets.only(top: 20),
+      child: Text(
+        'Final Score: ' + score.toString(),
+        style: TextStyle(
+          fontSize: 20,
+          color: Colors.black,
+        ),
+      ),
+    ),
+    );
+    children.add(Padding(
+      padding: EdgeInsets.only(top: 20),
+      child: Text(
+        'Total lines cleared: ' + game.gameBoard.totalLinesCleared.toString(),
+        style: TextStyle(
+          fontSize: 20,
+          color: Colors.black,
+        ),
+      ),
+    ),
+    );
+    children.add(Padding(
+      padding: EdgeInsets.only(top: 20),
+      child: Text(
+        'Level: ' + game.gameBoard.level.toString(),
+        style: TextStyle(
+          fontSize: 20,
+          color: Colors.black,
+        ),
+      ),
+    ),
     );
     if (score >= highScore && score > 0) {
       children.add(
