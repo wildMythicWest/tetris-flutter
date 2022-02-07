@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 2.1.0+1
+version: 2.2.0+1
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -23,8 +23,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flame: ^0.29.3
-#  shared_preferences: ^2.0.4
+  flame: ^1.0.0-rc8
+  shared_preferences: ^2.0.5
+  audioplayers: ^0.18.1
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -42,6 +43,7 @@ dev_dependencies:
 flutter:
   assets:
     - assets/audio/Tetris_theme.ogg
+    - assets/audio/banjo_tetris_loop.mp3
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

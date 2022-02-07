@@ -231,6 +231,7 @@ class TetrisGameUiState extends State<TetrisGameUi> with WidgetsBindingObserver 
             padding: EdgeInsets.only(bottom: 30),
             child: Row(
               children: <Widget>[
+
                 spacer(),
                 GestureDetector(
                   onTapDown: (_) => game.gameBoard.activeTetrimino.moveDown(),
@@ -239,6 +240,12 @@ class TetrisGameUiState extends State<TetrisGameUi> with WidgetsBindingObserver 
                   onLongPressEnd: (_) => game.gameBoard.endSoftDrop(),
                   behavior: HitTestBehavior.opaque,
                   child: Drop(),
+                ),
+                spacer(),
+                GestureDetector(
+                  onTapDown: (TapDownDetails d) => game.gameBoard.activeTetrimino.rotateClockwise(),
+                  behavior: HitTestBehavior.opaque,
+                  child: RotateRight(),
                 ),
                 spacer(),
                 GestureDetector(
@@ -255,12 +262,6 @@ class TetrisGameUiState extends State<TetrisGameUi> with WidgetsBindingObserver 
                   onLongPressEnd: (_) => game.gameBoard.stopAutoMove(),
                   behavior: HitTestBehavior.opaque,
                   child: MoveRight(),
-                ),
-                spacer(),
-                GestureDetector(
-                  onTapDown: (TapDownDetails d) => game.gameBoard.activeTetrimino.rotateClockwise(),
-                  behavior: HitTestBehavior.opaque,
-                  child: RotateRight(),
                 ),
                 spacer(),
                 GestureDetector(

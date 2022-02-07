@@ -1,5 +1,5 @@
-import 'package:flame/util.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flame/flame.dart';
+import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tetris/tetris_game.dart';
@@ -9,23 +9,20 @@ import 'bgm.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  Util flameUtil = Util();
-  await flameUtil.fullScreen();
-  await flameUtil.setOrientation(DeviceOrientation.portraitUp);
-  Size screenSize = await flameUtil.initialDimensions(); //20x20
 
-  double gameScreenWidth = screenSize.width * 4 / 5;
-  double gameScreenHeight = screenSize.height * 4 / 5;
-  Size gameScreenSize = Size(gameScreenWidth, gameScreenHeight);
+  await Flame.device.fullScreen();
+  await Flame.device.setOrientation(DeviceOrientation.portraitUp);
 
-  double gameBottom = screenSize.height - gameScreenWidth;
-  double gameRight = screenSize.width - gameScreenWidth;
 
   await BGM.add("Tetris_theme.ogg");
+  await BGM.add("banjo_tetris_loop.mp3");
 
   TetrisGameUi gameUI = TetrisGameUi();
-  TetrisGame game = TetrisGame(gameUI.state, gameScreenSize);
+  TetrisGame game = TetrisGame(gameUI.state);
   gameUI.state.game = game;
+
+  double gameBottom = game.hasLayout ? game.size.y - game.screenSize.width : 0;
+  double gameRight = game.hasLayout ? game.size.x - game.screenSize.width : 0;
 
   runApp(MaterialApp(
     title: 'Tetris Game',
@@ -36,7 +33,7 @@ void main() async {
         fit: StackFit.expand,
         children: <Widget>[
           Positioned.fill(
-            child: game.widget,
+            child: GameWidget(game: game,),
             bottom: gameBottom,
             right: gameRight,
           ),
@@ -49,5 +46,5 @@ void main() async {
     debugShowCheckedModeBanner: false,
   ),
   );
-  BGM.play(0, 0.3);
+  BGM.play(1, 0.3);
 }

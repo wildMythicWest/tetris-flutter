@@ -5,18 +5,20 @@ import 'package:tetris/tetris_game_ui.dart';
 
 import 'game_board.dart';
 
-class TetrisGame extends Game{
+class TetrisGame extends FlameGame {
 
   Size screenSize;
   GameBoard gameBoard;
   final TetrisGameUiState state;
 
-  TetrisGame(this.state, this.screenSize) {
-    initialize();
+  TetrisGame(this.state) {
+    gameBoard = GameBoard(this);
   }
 
-  void initialize() async {
-    gameBoard = GameBoard(this);
+  @override
+  Future<void> onLoad() async {
+    screenSize = Size(size.x * 4 / 5, size.y * 4 / 5);
+    gameBoard.onLoad();
   }
 
   void start() {

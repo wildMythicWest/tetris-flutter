@@ -26,7 +26,9 @@ class GameBoard {
   Set<GridPoint> staticBlocks = new HashSet();
 
 
-  GameBoard(this.gameController) {
+  GameBoard(this.gameController);
+
+  onLoad() {
     tileSize = gameController.screenSize.width / tilesW;
     tilesH = (gameController.screenSize.height / tileSize).floor();
   }
@@ -118,7 +120,11 @@ class GameBoard {
       gameController.state.currentScreen = UIScreen.lost;
     }
     Shape shape = getNextShape();
-    activeTetrimino = Tetrimino.fromOrigin(origin, shape, tileSize, tilesW, tilesH, staticBlocks);
+    Tetrimino newTetrimino = Tetrimino.fromOrigin(origin, shape, tileSize, tilesW, tilesH, staticBlocks);
+    if(!newTetrimino.findFreePositionOnBoard(origin, shape)) {
+      gameController.state.currentScreen = UIScreen.lost;
+    }
+    activeTetrimino = newTetrimino;
   }
 
   void drawStaticBlocks(Canvas canvas) {
@@ -177,7 +183,7 @@ class GameBoard {
   }
 
   changeSpeed() {
-    speed += 1;
+    speed += (level*2)/10;
   }
 
   void changeScore(int linesCleared) {
@@ -211,11 +217,15 @@ class GameBoard {
           gameController.state.heldShape.name,
           gameController.state.heldShape.points,
           gameController.state.heldShape.color);
+      Tetrimino heldTetrimino = Tetrimino.fromOrigin(origin, currentlyHeld, tileSize, tilesW, tilesH, staticBlocks);
+      if(!heldTetrimino.findFreePositionOnBoard(origin, currentlyHeld)) {
+        return;
+      }
       gameController.state.heldShape = Shape(
           activeTetrimino.shape.name,
           activeTetrimino.shape.points,
           activeTetrimino.shape.color);
-      activeTetrimino = Tetrimino.fromOrigin(origin, currentlyHeld, tileSize, tilesW, tilesH, staticBlocks);
+      activeTetrimino = heldTetrimino;
     } else {
       gameController.state.heldShape = Shape(
           activeTetrimino.shape.name,
@@ -230,7 +240,7 @@ class GameBoard {
 
   void beginSoftDrop() {
     originalSpeed = speed;
-    speed = originalSpeed + 10;
+    speed = originalSpeed * 10;
   }
 
   void endSoftDrop() {
@@ -245,7 +255,7 @@ class GameBoard {
     if(!autoMoveEnabled || autoMoveDirection == AutoMoveDirection.NONE) {
       return;
     }
-    double step = t * (speed + 10) * tileSize;
+    double step = t * (speed * 10) * tileSize;
     autoMoveStep += step;
 
     if(autoMoveStep >= tileSize) {

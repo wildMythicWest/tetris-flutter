@@ -143,42 +143,41 @@ class Tetrimino {
       shape = newShape;
       return;
     }
+    findFreePositionOnBoard(origin, newShape);
+  }
 
-    if(tryMoveLeft(origin, newShape)) {
-      return;
+  bool findFreePositionOnBoard(GridPoint origin, Shape shape) {
+    if(canMove(origin, shape) || tryMoveLeft(origin, shape) || tryMoveRight(origin, shape)) {
+      return true;
     }
-    if(tryMoveRight(origin, newShape)) {
-      return;
-    }
+    return false;
   }
 
   bool tryMoveLeft(GridPoint origin, Shape shape) {
     GridPoint newOrigin = _moveBlockLeft(origin);
-    if (canMove(newOrigin, this.shape)) {
-      if(canMove(newOrigin, shape)) {
-        this.origin = newOrigin;
-        this.shape = shape;
-        return true;
-      } else {
-        return tryMoveLeft(newOrigin, shape);
-      }
+    if(canMove(newOrigin, shape)) {
+      this.origin = newOrigin;
+      this.shape = shape;
+      return true;
     } else {
-      return false;
+      if (!canMove(newOrigin, this.shape)) {
+        return false;
+      }
+      return tryMoveLeft(newOrigin, shape);
     }
   }
 
   bool tryMoveRight(GridPoint origin, Shape shape) {
     GridPoint newOrigin = _moveBlockRight(origin);
-    if (canMove(newOrigin, this.shape)) {
-      if (canMove(newOrigin, shape)) {
-        this.origin = newOrigin;
-        this.shape = shape;
-        return true;
-      } else {
-        return tryMoveRight(newOrigin, shape);
-      }
+    if (canMove(newOrigin, shape)) {
+      this.origin = newOrigin;
+      this.shape = shape;
+      return true;
     } else {
-      return false;
+      if (!canMove(newOrigin, this.shape)) {
+        return false;
+      }
+      return tryMoveRight(newOrigin, shape);
     }
   }
 }
